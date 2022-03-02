@@ -15,7 +15,6 @@ public class GameStatus {
 
 	public Player winner() {
 		return winner;
-
 	}
 
 }

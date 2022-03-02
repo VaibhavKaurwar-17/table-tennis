@@ -1,5 +1,6 @@
 package com.game.config;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -11,16 +12,16 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 
 import com.game.model.Game;
+import com.game.model.GameState;
 import com.game.model.Player;
 import com.game.rule.GameRule;
 import com.game.rule.TableTennisRule;
 import com.game.service.GameDecider;
 import com.game.service.GameLogger;
-import com.game.service.ScoreManager;
+import com.game.service.GameManager;
 import com.game.service.TableTennisGameDecider;
 import com.game.service.TableTennisLogger;
 import com.game.tabletennis.TwoPlayerTableTennis;
@@ -30,26 +31,25 @@ public class GameConfig {
 
 	@Bean
 	public Player player1() {
-		//Id can be accepted from user in future
+		// Id can be accepted from user in future
 		return new Player("Player 1");
 	}
 
 	@Bean
 	public Player player2() {
-		//Id can be accepted from user in future
+		// Id can be accepted from user in future
 		return new Player("Player 2");
 	}
 
 	@Bean
-	public GameLogger logger(@Qualifier("player1") Player player1, @Qualifier("player2") Player player2,
-			ScoreManager scoreManager) {
-		//logs to output console for simplicity
-		return new TableTennisLogger(Arrays.asList(player1, player2), scoreManager, System.out);
+	public GameLogger logger(Map<Player, Integer> defaultScores) {
+		// logs to output console for simplicity
+		return new TableTennisLogger(System.out, new GameState(defaultScores, null, null));
 	}
 
 	@Bean
-	public ScoreManager scoreManager(Map<Player, Integer> defaultScores) {
-		return new ScoreManager(defaultScores);
+	public GameManager scoreManager(Map<Player, Integer> defaultScores) {
+		return new GameManager(defaultScores, null, null, null, new ArrayList<>());
 	}
 
 	@Bean
@@ -70,9 +70,9 @@ public class GameConfig {
 
 	@Bean
 	public TableTennisRule tableTennisRule(@Qualifier("player1") Player player1, @Qualifier("player2") Player player2,
-			ScoreManager scoreManager) {
+			GameManager scoreManager) {
 		// Winning rule
-		return new TableTennisRule(Arrays.asList(player1, player2), scoreManager);
+		return new TableTennisRule();
 	}
 
 	@Bean
@@ -82,20 +82,20 @@ public class GameConfig {
 
 	@Bean
 	public Game game(@Qualifier("player1") Player player1, @Qualifier("player2") Player player2, GameLogger logger,
-			ScoreManager scoreManager, GameDecider gameDecider, Random randomPointGenerator) {
+			GameManager scoreManager, GameDecider gameDecider, Random randomPointGenerator) {
 		return new TwoPlayerTableTennis(Arrays.asList(player1, player2), logger, scoreManager, randomPointGenerator,
 				gameDecider);
 	}
-	
-	//Runner can decoupled if needed
-	//This is entry point
+
+	// Runner can decoupled if needed
+	// This is entry point
 	@Bean
 	@Profile("!test")
 	public CommandLineRunner runner(Game game) {
 		return (args) -> game.playGame();
 	}
 
-	//Trigger game
+	// Trigger game
 	public static void main(String[] args) {
 		SpringApplication.run(GameConfig.class, args);
 	}

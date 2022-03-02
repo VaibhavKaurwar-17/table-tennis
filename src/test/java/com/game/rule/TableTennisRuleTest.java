@@ -1,9 +1,9 @@
 package com.game.rule;
 
-import static org.mockito.Mockito.when;
-
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.junit.Assert;
@@ -14,9 +14,10 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import com.game.model.Decision;
+import com.game.model.GameState;
 import com.game.model.GameStatus;
 import com.game.model.Player;
-import com.game.service.ScoreManager;
+import com.game.service.GameManager;
 
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
@@ -27,7 +28,7 @@ public class TableTennisRuleTest {
 	List<Player> players;
 
 	@Mock
-	ScoreManager scoreManager;
+	GameManager scoreManager;
 
 	private static Player player1 = new Player("1");
 	private static Player player2 = new Player("2");
@@ -41,11 +42,11 @@ public class TableTennisRuleTest {
 	@Test
 	@Parameters
 	public void applyRule(Integer player1Score, Integer player2Score, Decision expected, String winner) {
-		when(scoreManager.getTotalScore(player1)).thenReturn(player1Score);
-		when(scoreManager.getTotalScore(player2)).thenReturn(player2Score);
-
-		TableTennisRule rule = new TableTennisRule(players, scoreManager);
-		GameStatus actualGameStatus = rule.applyRule();
+		TableTennisRule rule = new TableTennisRule();
+		Map<Player, Integer> map = new HashMap<>();
+		map.put(player1, player1Score);
+		map.put(player2, player2Score);
+		GameStatus actualGameStatus = rule.applyRule(new GameState(map, player1, player1));
 
 		Assert.assertEquals(expected, actualGameStatus.decision());
 		Assert.assertEquals(winner, Optional.ofNullable(actualGameStatus.winner()).map(Player::playerId).orElse(null));
@@ -53,20 +54,14 @@ public class TableTennisRuleTest {
 	}
 
 	public Object[][] parametersForApplyRule() {
-		return new Object[][] { 
-				{ 13, 12, Decision.PENDING, null },  
-				{ 10, 10, Decision.PENDING, null },
-				{ 10, 11, Decision.PENDING, null } , 
-				{ 20, 20, Decision.PENDING, null },
-								
-				{ 21, 20, Decision.COMPLETED, "1" },
-				{ 11, 9, Decision.COMPLETED, "1" },
+		return new Object[][] { { 13, 12, Decision.PENDING, null }, { 10, 10, Decision.PENDING, null },
+				{ 10, 11, Decision.PENDING, null }, { 20, 20, Decision.PENDING, null },
+
+				{ 21, 20, Decision.COMPLETED, "1" }, { 11, 9, Decision.COMPLETED, "1" },
 				{ 13, 11, Decision.COMPLETED, "1" },
-				
-				{ 20, 21, Decision.COMPLETED, "2" },
-				{ 9, 11, Decision.COMPLETED, "2" },
-				{ 11, 13, Decision.COMPLETED, "2" }
-				};
+
+				{ 20, 21, Decision.COMPLETED, "2" }, { 9, 11, Decision.COMPLETED, "2" },
+				{ 11, 13, Decision.COMPLETED, "2" } };
 	}
 
 }

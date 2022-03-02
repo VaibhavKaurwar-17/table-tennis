@@ -1,6 +1,6 @@
 package com.game.service;
 
-public interface GameLogger {
+public interface GameLogger extends StateListener {
 
 	void log(String log);
 

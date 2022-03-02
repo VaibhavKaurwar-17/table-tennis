@@ -1,5 +1,6 @@
 package com.game.service;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 import java.util.Collections;
@@ -28,16 +29,14 @@ public class TableTennisGameDeciderTest {
 	@Parameters
 	public void testMakeDecision(GameStatus expected) {
 		MockitoAnnotations.openMocks(this);
-		when(rule.applyRule()).thenReturn(expected);
+		when(rule.applyRule(any())).thenReturn(expected);
 		TableTennisGameDecider decider = new TableTennisGameDecider(Collections.singletonList(rule));
 		GameStatus actual = decider.makeDecision();
 		Assert.assertEquals(expected, actual);
 	}
 
 	public Object[][] parametersForTestMakeDecision() {
-		return new Object[][] { 
-			{ new GameStatus(new Player("1"), Decision.COMPLETED) },
-			{ new GameStatus(new Player("1"), Decision.PENDING) } 
-		};
+		return new Object[][] { { new GameStatus(new Player("1"), Decision.COMPLETED) },
+				{ new GameStatus(new Player("1"), Decision.PENDING) } };
 	}
 }

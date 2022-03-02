@@ -3,19 +3,19 @@ package com.game.service;
 import java.io.PrintStream;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
+import com.game.model.GameState;
 import com.game.model.Player;
 
-public class TableTennisLogger implements GameLogger {
+public class TableTennisLogger implements GameLogger, StateListener {
 
 	private final PrintStream printStream;
-	private final List<Player> players;
-	private final ScoreManager scoreManager;
+	private GameState gameState;
 
-	public TableTennisLogger(List<Player> players, ScoreManager scoreManager, PrintStream printStream) {
-		this.players = players;
-		this.scoreManager = scoreManager;
+	public TableTennisLogger(PrintStream printStream, GameState gameState) {
 		this.printStream = printStream;
+		this.gameState = gameState;
 	}
 
 	@Override
@@ -26,22 +26,27 @@ public class TableTennisLogger implements GameLogger {
 	public void showScore() {
 		StringBuilder builder = new StringBuilder();
 		builder.append("-----------SCORE CARD----------\n");
-		players.stream().forEach(p -> builder.append(playerScore(p)));
+		gameState.getTotalScores().keySet().stream().forEach(p -> builder.append(playerScore(p)));
 		builder.append("-------------------------------\n");
 		log(builder.toString());
 	}
 
 	public String playerScore(Player player) {
-		return player.playerId() + asteriskForServer(player.playerId()) + ": " + scoreManager.getTotalScore(player)
-				+ "\n";
+		return player.playerId() + asteriskForServer(player.playerId()) + ": " + gameState.getTotalScore(player) + "\n";
 	}
 
 	private String asteriskForServer(String playerId) {
-		return playerId.equals(scoreManager.getServer().playerId()) ? "* " : "  ";
+		return playerId.equals(gameState.getServer().playerId()) ? "* " : "  ";
 	}
 
 	public void showWinner() {
-		log("WINNER: " + scoreManager.getWinner().playerId());
+		log("WINNER: " + gameState.getWinner().playerId());
+	}
+
+	@Override
+	public void handle(GameState gameState) {
+		this.gameState = gameState;
+
 	}
 
 }

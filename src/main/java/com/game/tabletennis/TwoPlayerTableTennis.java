@@ -9,22 +9,24 @@ import com.game.model.GameStatus;
 import com.game.model.Player;
 import com.game.service.GameDecider;
 import com.game.service.GameLogger;
-import com.game.service.ScoreManager;
+import com.game.service.GameManager;
 
 public class TwoPlayerTableTennis implements Game {
 	private final List<Player> players;
-	private final ScoreManager scoreManager;
+	private final GameManager scoreManager;
 	private final GameLogger logger;
 	private final GameDecider gameDecider;
 	private final Random randomPointGenerator;
 
-	public TwoPlayerTableTennis(List<Player> players, GameLogger logger, ScoreManager scoreManager,
+	public TwoPlayerTableTennis(List<Player> players, GameLogger logger, GameManager scoreManager,
 			Random randomPointGenerator, GameDecider gameDecider) {
 		this.players = players;
 		this.scoreManager = scoreManager;
 		this.logger = logger;
 		this.randomPointGenerator = randomPointGenerator;
 		this.gameDecider = gameDecider;
+		scoreManager.addSubscriber(gameDecider);
+		scoreManager.addSubscriber(logger);
 	}
 
 	@Override
@@ -36,7 +38,7 @@ public class TwoPlayerTableTennis implements Game {
 			logger.showScore();
 			serve();
 			serverRound++;
-			//Every player gets to serve twice in a row
+			// Every player gets to serve twice in a row
 			if (serverRound == 2) {
 				scoreManager.swap();
 				serverRound = 0;
